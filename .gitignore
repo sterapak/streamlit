@@ -1,0 +1,25 @@
+# Ignore virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# Mac system files
+.DS_Store
+
+# Streamlit secrets (if you ever store them locally)
+.secrets.toml
+venv/
+__pycache__/
+*.py[cod]
+.vscode/
+.DS_Store
