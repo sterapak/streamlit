@@ -16,3 +16,16 @@ Fully configurable via .streamlit/secrets.toml
 ### 🧪 Demo
 
 ![Wine App Screenshot](screenshot.png)
+
+## 📊 Data Source
+
+This app uses the **Wine Quality dataset** from the UCI Machine Learning Repository:
+
+- UCI Link: [https://archive.ics.uci.edu/ml/datasets/wine+quality](https://archive.ics.uci.edu/ml/datasets/wine+quality)
+- Citation:
+  > P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis.  
+  > Modeling wine preferences by data mining from physicochemical properties.  
+  > In Decision Support Systems, Elsevier, 47(4):547-553, 2009.
+
+The dataset includes physicochemical properties and quality scores for red and white Portuguese "Vinho Verde" wines.
+
