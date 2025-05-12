@@ -2,13 +2,18 @@ import streamlit as st
 import requests
 import json
 from openai import OpenAI
+from streamlit_analytics import track
+import os
 
-# === Load secrets from .streamlit/secrets.toml ===
+# Google Analytics tracking
+track()
+
+# Azure ML endpoint setup
+AZURE_ENDPOINT_URI = st.secrets["AZURE_ENDPOINT_URI"]
+AZURE_API_KEY = st.secrets["AZURE_API_KEY"]
+
+# OpenAI setup
 openai_api_key = st.secrets["OPENAI_API_KEY"]
-azure_api_key = st.secrets["AZURE_API_KEY"]
-azure_endpoint = st.secrets["AZURE_ENDPOINT_URI"]
-
-# === Set up OpenAI client ===
 client = OpenAI(api_key=openai_api_key)
 
 st.title("🍷 AI Wine Quality Assistant")
@@ -28,7 +33,7 @@ alcohol = st.slider("Alcohol %", 8.0, 15.0, 10.0)
 color = st.selectbox("Wine Color", ["red", "white"])
 qual_bool = st.selectbox("Is it quality wine (qual_bool)?", [True, False])
 
-# --- Prepare input for Azure ML in 'split' orientation ---
+# --- Prepare input ---
 input_data = {
     "columns": [
         "fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
@@ -52,18 +57,17 @@ input_data = {
     ]]
 }
 
-# === Prediction + GPT response ===
 if st.button("Predict & Generate Tasting Note"):
-    with st.spinner("🔍 Predicting wine quality..."):
+    with st.spinner("Predicting wine quality..."):
         try:
-            body = json.dumps({ "input_data": input_data })
+            body = json.dumps({"input_data": input_data})
 
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {azure_api_key}"
+                "Authorization": f"Bearer {AZURE_API_KEY}"
             }
 
-            response = requests.post(azure_endpoint, headers=headers, data=body)
+            response = requests.post(AZURE_ENDPOINT_URI, headers=headers, data=body)
 
             if response.status_code == 200:
                 result = response.json()
@@ -74,7 +78,6 @@ if st.button("Predict & Generate Tasting Note"):
                 if quality is not None:
                     st.success(f"Predicted Wine Quality Score: {quality:.2f}")
 
-                    # --- GPT prompt for wine description ---
                     prompt = f"""
                     A {color} wine has a predicted quality score of {quality:.1f}.
                     Characteristics:
@@ -88,21 +91,17 @@ if st.button("Predict & Generate Tasting Note"):
                     Write a 2-sentence tasting description and suggest a food pairing.
                     """
 
-                    try:
-                        gpt_response = client.chat.completions.create(
-                            model="gpt-4o",
-                            messages=[{"role": "user", "content": prompt}],
-                            temperature=0.7,
-                            max_tokens=150
-                        )
+                    gpt_response = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.7,
+                        max_tokens=150
+                    )
 
-                        st.markdown("### 🍷 GPT-Generated Tasting Note")
-                        st.write(gpt_response.choices[0].message.content.strip())
-
-                    except Exception as gpt_error:
-                        st.error(f"⚠️ GPT generation failed: {gpt_error}")
+                    st.markdown("### 🍷 GPT-Generated Tasting Note")
+                    st.write(gpt_response.choices[0].message.content.strip())
                 else:
-                    st.warning("Prediction returned no value.")
+                    st.error("Prediction returned no value.")
             else:
                 st.error(f"❌ Azure ML call failed ({response.status_code})")
                 st.text(response.text)
