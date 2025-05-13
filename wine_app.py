@@ -3,22 +3,21 @@ import requests
 import json
 from openai import OpenAI
 import streamlit.components.v1 as components
-import os
 
-# --- Load secrets securely ---
+# --- Load secrets ---
 AZURE_ENDPOINT_URI = st.secrets["AZURE_ENDPOINT_URI"]
 AZURE_API_KEY = st.secrets["AZURE_API_KEY"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 GA_MEASUREMENT_ID = st.secrets["GA_MEASUREMENT_ID"]
 
-# --- Inject Google Analytics directly using gtag.js ---
+# --- Inject GA4 gtag.js tracking ---
 components.html(
     f"""
-    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){{ dataLayer.push(arguments); }}
+      function gtag() {{ dataLayer.push(arguments); }}
       gtag('js', new Date());
       gtag('config', '{GA_MEASUREMENT_ID}');
     </script>
@@ -30,10 +29,10 @@ components.html(
 # --- OpenAI setup ---
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# --- Streamlit UI ---
+# --- App UI ---
 st.title("🍷 AI Wine Quality Assistant")
 
-# --- User inputs ---
+# --- Collect user input ---
 fixed_acidity = st.slider("Fixed Acidity", 4.0, 15.0, 7.4)
 volatile_acidity = st.slider("Volatile Acidity", 0.1, 1.5, 0.7)
 citric_acid = st.slider("Citric Acid", 0.0, 1.0, 0.0)
@@ -48,7 +47,7 @@ alcohol = st.slider("Alcohol %", 8.0, 15.0, 10.0)
 color = st.selectbox("Wine Color", ["red", "white"])
 qual_bool = st.selectbox("Is it quality wine (qual_bool)?", [True, False])
 
-# --- Format input for Azure ML model ---
+# --- Prepare input data for Azure ML ---
 input_data = {
     "columns": [
         "fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
@@ -92,7 +91,6 @@ if st.button("Predict & Generate Tasting Note"):
                 if quality is not None:
                     st.success(f"Predicted Wine Quality Score: {quality:.2f}")
 
-                    # Generate GPT tasting note
                     prompt = f"""
                     A {color} wine has a predicted quality score of {quality:.1f}.
                     Characteristics:
