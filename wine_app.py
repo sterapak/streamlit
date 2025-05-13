@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import json
 from openai import OpenAI
-import streamlit.components.v1 as components
 
 # --- Load secrets securely ---
 AZURE_ENDPOINT_URI = st.secrets["AZURE_ENDPOINT_URI"]
@@ -10,8 +9,8 @@ AZURE_API_KEY = st.secrets["AZURE_API_KEY"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 GA_MEASUREMENT_ID = st.secrets["GA_MEASUREMENT_ID"]
 
-# --- Inject GA4 with debug and UA block ---
-components.html(
+# --- Inject GA4 Tracking (with debug + UA block) ---
+st.markdown(
     f"""
     <!-- Google Analytics 4 (Debug Mode Enabled) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
@@ -19,19 +18,14 @@ components.html(
       window.dataLayer = window.dataLayer || [];
       function gtag() {{ dataLayer.push(arguments); }}
 
-      // Block UA traffic from GTM
+      // Block old UA
       window['ga-disable-UA-122023594-8'] = true;
 
       gtag('js', new Date());
       gtag('config', '{GA_MEASUREMENT_ID}', {{ 'debug_mode': true }});
-      gtag('event', 'page_test_event', {{
-        'event_category': 'streamlit',
-        'event_label': 'test_page_load'
-      }});
     </script>
     """,
-    height=0,
-    width=0
+    unsafe_allow_html=True
 )
 
 # --- OpenAI setup ---
@@ -39,7 +33,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 st.title("🍷 AI Wine Quality Assistant")
 
-# --- Input sliders and selections ---
+# --- User inputs ---
 fixed_acidity = st.slider("Fixed Acidity", 4.0, 15.0, 7.4)
 volatile_acidity = st.slider("Volatile Acidity", 0.1, 1.5, 0.7)
 citric_acid = st.slider("Citric Acid", 0.0, 1.0, 0.0)
@@ -78,6 +72,7 @@ input_data = {
     ]]
 }
 
+# --- Prediction and GPT output ---
 if st.button("Predict & Generate Tasting Note"):
     with st.spinner("Predicting wine quality..."):
         try:
