@@ -2,11 +2,26 @@ import streamlit as st
 import requests
 import json
 from openai import OpenAI
-from streamlit_analytics import track
-import os
+import streamlit.components.v1 as components
 
-# Google Analytics tracking
-track()
+# Inject Google Tag Manager using Measurement ID from secrets
+GA_MEASUREMENT_ID = st.secrets["GA_MEASUREMENT_ID"]
+
+components.html(
+    f"""
+    <!-- Google Tag Manager -->
+    <script>
+      (function(w,d,s,l,i){{w[l]=w[l]||[];w[l].push({{'gtm.start':
+      new Date().getTime(),event:'gtm.js'}});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id=' + i + dl;f.parentNode.insertBefore(j,f);
+      }})(window,document,'script','dataLayer','{GA_MEASUREMENT_ID}');
+    </script>
+    <!-- End Google Tag Manager -->
+    """,
+    height=0,
+    width=0
+)
 
 # Azure ML endpoint setup
 AZURE_ENDPOINT_URI = st.secrets["AZURE_ENDPOINT_URI"]
@@ -18,7 +33,7 @@ client = OpenAI(api_key=openai_api_key)
 
 st.title("🍷 AI Wine Quality Assistant")
 
-# --- Collect user inputs ---
+# Collect user input
 fixed_acidity = st.slider("Fixed Acidity", 4.0, 15.0, 7.4)
 volatile_acidity = st.slider("Volatile Acidity", 0.1, 1.5, 0.7)
 citric_acid = st.slider("Citric Acid", 0.0, 1.0, 0.0)
@@ -33,7 +48,7 @@ alcohol = st.slider("Alcohol %", 8.0, 15.0, 10.0)
 color = st.selectbox("Wine Color", ["red", "white"])
 qual_bool = st.selectbox("Is it quality wine (qual_bool)?", [True, False])
 
-# --- Prepare input ---
+# Prepare input data
 input_data = {
     "columns": [
         "fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
@@ -57,6 +72,7 @@ input_data = {
     ]]
 }
 
+# Predict and generate tasting note
 if st.button("Predict & Generate Tasting Note"):
     with st.spinner("Predicting wine quality..."):
         try:
@@ -78,18 +94,17 @@ if st.button("Predict & Generate Tasting Note"):
                 if quality is not None:
                     st.success(f"Predicted Wine Quality Score: {quality:.2f}")
 
-                    prompt = f"""
-                    A {color} wine has a predicted quality score of {quality:.1f}.
-                    Characteristics:
-                    - Alcohol: {alcohol}%
-                    - pH: {ph}
-                    - Residual sugar: {residual_sugar}g/L
-                    - Fixed acidity: {fixed_acidity}
-                    - Volatile acidity: {volatile_acidity}
-                    - Sulphates: {sulphates}
-
-                    Write a 2-sentence tasting description and suggest a food pairing.
-                    """
+                    prompt = (
+                        f"A {color} wine has a predicted quality score of {quality:.1f}.\n"
+                        f"Characteristics:\n"
+                        f"- Alcohol: {alcohol}%\n"
+                        f"- pH: {ph}\n"
+                        f"- Residual sugar: {residual_sugar}g/L\n"
+                        f"- Fixed acidity: {fixed_acidity}\n"
+                        f"- Volatile acidity: {volatile_acidity}\n"
+                        f"- Sulphates: {sulphates}\n\n"
+                        "Write a 2-sentence tasting description and suggest a food pairing."
+                    )
 
                     gpt_response = client.chat.completions.create(
                         model="gpt-4o",
