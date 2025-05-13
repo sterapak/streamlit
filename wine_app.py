@@ -10,6 +10,7 @@ AZURE_API_KEY = st.secrets["AZURE_API_KEY"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 GA_MEASUREMENT_ID = st.secrets["GA_MEASUREMENT_ID"]
 
+# Trigger redeploy to refresh GA injection
 # --- Inject GA4 gtag.js tracking ---
 components.html(
     f"""
