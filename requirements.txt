@@ -1,4 +1,4 @@
 streamlit
 requests
 openai
-git+https://github.com/streamlit/streamlit-analytics.git
+streamlit-analytics
