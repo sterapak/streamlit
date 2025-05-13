@@ -10,8 +10,7 @@ AZURE_API_KEY = st.secrets["AZURE_API_KEY"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 GA_MEASUREMENT_ID = st.secrets["GA_MEASUREMENT_ID"]
 
-# Trigger redeploy to refresh GA injection
-# --- Inject GA4 gtag.js tracking ---
+# --- Inject GA4 Debug Tracking ---
 components.html(
     f"""
     <!-- Google Analytics -->
@@ -20,7 +19,11 @@ components.html(
       window.dataLayer = window.dataLayer || [];
       function gtag() {{ dataLayer.push(arguments); }}
       gtag('js', new Date());
-      gtag('config', '{GA_MEASUREMENT_ID}');
+      gtag('config', '{GA_MEASUREMENT_ID}', {{ 'debug_mode': true }});
+      gtag('event', 'page_test_event', {{
+        'event_category': 'streamlit',
+        'event_label': 'test_page_load'
+      }});
     </script>
     """,
     height=0,
@@ -48,7 +51,7 @@ alcohol = st.slider("Alcohol %", 8.0, 15.0, 10.0)
 color = st.selectbox("Wine Color", ["red", "white"])
 qual_bool = st.selectbox("Is it quality wine (qual_bool)?", [True, False])
 
-# --- Prepare input data for Azure ML ---
+# --- Prepare input data ---
 input_data = {
     "columns": [
         "fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
