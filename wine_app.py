@@ -4,20 +4,24 @@ import json
 from openai import OpenAI
 import streamlit.components.v1 as components
 
-# --- Load secrets ---
+# --- Load secrets securely ---
 AZURE_ENDPOINT_URI = st.secrets["AZURE_ENDPOINT_URI"]
 AZURE_API_KEY = st.secrets["AZURE_API_KEY"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 GA_MEASUREMENT_ID = st.secrets["GA_MEASUREMENT_ID"]
 
-# --- Inject GA4 Debug Tracking ---
+# --- Inject GA4 with debug and UA block ---
 components.html(
     f"""
-    <!-- Google Analytics -->
+    <!-- Google Analytics 4 (Debug Mode Enabled) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag() {{ dataLayer.push(arguments); }}
+
+      // Block UA traffic from GTM
+      window['ga-disable-UA-122023594-8'] = true;
+
       gtag('js', new Date());
       gtag('config', '{GA_MEASUREMENT_ID}', {{ 'debug_mode': true }});
       gtag('event', 'page_test_event', {{
@@ -33,10 +37,9 @@ components.html(
 # --- OpenAI setup ---
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# --- App UI ---
 st.title("🍷 AI Wine Quality Assistant")
 
-# --- Collect user input ---
+# --- Input sliders and selections ---
 fixed_acidity = st.slider("Fixed Acidity", 4.0, 15.0, 7.4)
 volatile_acidity = st.slider("Volatile Acidity", 0.1, 1.5, 0.7)
 citric_acid = st.slider("Citric Acid", 0.0, 1.0, 0.0)
@@ -51,7 +54,7 @@ alcohol = st.slider("Alcohol %", 8.0, 15.0, 10.0)
 color = st.selectbox("Wine Color", ["red", "white"])
 qual_bool = st.selectbox("Is it quality wine (qual_bool)?", [True, False])
 
-# --- Prepare input data ---
+# --- Prepare input for Azure ML endpoint ---
 input_data = {
     "columns": [
         "fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
