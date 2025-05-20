@@ -1,6 +1,5 @@
 streamlit>=1.24.0
 requests>=2.31.0
 openai>=1.0.0
-streamlit-analytics
 pytest>=7.4.0
 pytest-cov>=4.1.0

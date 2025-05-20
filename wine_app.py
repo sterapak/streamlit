@@ -6,26 +6,6 @@ import json
 AZURE_ENDPOINT_URI = st.secrets["AZURE_ENDPOINT_URI"]
 AZURE_API_KEY = st.secrets["AZURE_API_KEY"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-GA_MEASUREMENT_ID = st.secrets["GA_MEASUREMENT_ID"]
-
-# --- Inject GA4 Tracking (with debug + UA block) ---
-st.markdown(
-    f"""
-    <!-- Google Analytics 4 (Debug Mode Enabled) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {{ dataLayer.push(arguments); }}
-
-      // Block old UA
-      window['ga-disable-UA-122023594-8'] = true;
-
-      gtag('js', new Date());
-      gtag('config', '{GA_MEASUREMENT_ID}', {{ 'debug_mode': true }});
-    </script>
-    """,
-    unsafe_allow_html=True
-)
 
 st.title("🍷 AI Wine Quality Assistant")
 

@@ -9,8 +9,7 @@ def mock_secrets():
     with patch('streamlit.secrets', {
         "AZURE_ENDPOINT_URI": "https://mock-azure-endpoint.com",
         "AZURE_API_KEY": "mock-azure-key",
-        "OPENAI_API_KEY": "mock-openai-key",
-        "GA_MEASUREMENT_ID": "mock-ga-id"
+        "OPENAI_API_KEY": "mock-openai-key"
     }):
         yield
 
@@ -52,8 +51,7 @@ def test_input_data_structure():
     with patch('streamlit.secrets', {
         "AZURE_ENDPOINT_URI": "https://mock-azure-endpoint.com",
         "AZURE_API_KEY": "mock-azure-key",
-        "OPENAI_API_KEY": "mock-openai-key",
-        "GA_MEASUREMENT_ID": "mock-ga-id"
+        "OPENAI_API_KEY": "mock-openai-key"
     }):
         import wine_app
         input_data = wine_app.input_data
