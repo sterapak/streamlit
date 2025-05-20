@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import json
-from openai import OpenAI
 
 # --- Load secrets securely ---
 AZURE_ENDPOINT_URI = st.secrets["AZURE_ENDPOINT_URI"]
@@ -27,9 +26,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-# --- OpenAI setup ---
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 st.title("🍷 AI Wine Quality Assistant")
 
@@ -72,54 +68,60 @@ input_data = {
     ]]
 }
 
+def predict_and_generate_note(input_data, color, alcohol, ph, residual_sugar, fixed_acidity, volatile_acidity, sulphates):
+    from openai import OpenAI
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    try:
+        body = json.dumps({"input_data": input_data})
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {AZURE_API_KEY}"
+        }
+        response = requests.post(AZURE_ENDPOINT_URI, headers=headers, data=body)
+        if response.status_code == 200:
+            result = response.json()
+            st.write("✅ Raw model response:", result)
+            quality = result[0] if isinstance(result, list) and len(result) > 0 else None
+            if quality is not None:
+                st.success(f"Predicted Wine Quality Score: {quality:.2f}")
+                prompt = f"""
+                A {color} wine has a predicted quality score of {quality:.1f}.
+                Characteristics:
+                - Alcohol: {alcohol}%
+                - pH: {ph}
+                - Residual sugar: {residual_sugar}g/L
+                - Fixed acidity: {fixed_acidity}
+                - Volatile acidity: {volatile_acidity}
+                - Sulphates: {sulphates}
+
+                Write a 2-sentence tasting description and suggest a food pairing.
+                """
+                gpt_response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.7,
+                    max_tokens=150
+                )
+                st.markdown("### 🍷 GPT-Generated Tasting Note")
+                st.write(gpt_response.choices[0].message.content.strip())
+            else:
+                st.warning("Prediction returned no value.")
+        else:
+            st.error(f"❌ Azure ML call failed ({response.status_code})")
+            st.text(response.text)
+    except Exception as e:
+        st.error(f"⚠️ Unexpected error: {e}")
+
 # --- Prediction and GPT output ---
 if st.button("Predict & Generate Tasting Note"):
     with st.spinner("Predicting wine quality..."):
-        try:
-            body = json.dumps({"input_data": input_data})
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {AZURE_API_KEY}"
-            }
-
-            response = requests.post(AZURE_ENDPOINT_URI, headers=headers, data=body)
-
-            if response.status_code == 200:
-                result = response.json()
-                st.write("✅ Raw model response:", result)
-
-                quality = result[0] if isinstance(result, list) and len(result) > 0 else None
-
-                if quality is not None:
-                    st.success(f"Predicted Wine Quality Score: {quality:.2f}")
-
-                    prompt = f"""
-                    A {color} wine has a predicted quality score of {quality:.1f}.
-                    Characteristics:
-                    - Alcohol: {alcohol}%
-                    - pH: {ph}
-                    - Residual sugar: {residual_sugar}g/L
-                    - Fixed acidity: {fixed_acidity}
-                    - Volatile acidity: {volatile_acidity}
-                    - Sulphates: {sulphates}
-
-                    Write a 2-sentence tasting description and suggest a food pairing.
-                    """
-
-                    gpt_response = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[{"role": "user", "content": prompt}],
-                        temperature=0.7,
-                        max_tokens=150
-                    )
-
-                    st.markdown("### 🍷 GPT-Generated Tasting Note")
-                    st.write(gpt_response.choices[0].message.content.strip())
-                else:
-                    st.warning("Prediction returned no value.")
-            else:
-                st.error(f"❌ Azure ML call failed ({response.status_code})")
-                st.text(response.text)
-
-        except Exception as e:
-            st.error(f"⚠️ Unexpected error: {e}")
+        predict_and_generate_note(
+            input_data,
+            color,
+            alcohol,
+            ph,
+            residual_sugar,
+            fixed_acidity,
+            volatile_acidity,
+            sulphates
+        )
