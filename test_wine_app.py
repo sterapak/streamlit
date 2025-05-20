@@ -2,11 +2,12 @@ import pytest
 import streamlit as st
 from unittest.mock import patch, MagicMock
 import json
+import os
 
-# Mock secrets
+# Mock environment variables
 @pytest.fixture(autouse=True)
-def mock_secrets():
-    with patch('streamlit.secrets', {
+def mock_env_vars():
+    with patch.dict(os.environ, {
         "AZURE_ENDPOINT_URI": "https://mock-azure-endpoint.com",
         "AZURE_API_KEY": "mock-azure-key",
         "OPENAI_API_KEY": "mock-openai-key"

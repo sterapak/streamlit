@@ -11,7 +11,10 @@ Built with Streamlit
 
 Backed by Azure ML for model inference
 
-Fully configurable via .streamlit/secrets.toml
+Configured via environment variables:
+- AZURE_ENDPOINT_URI: Your Azure ML endpoint URI
+- AZURE_API_KEY: Your Azure ML API key
+- OPENAI_API_KEY: Your OpenAI API key
 
 ### 🚀 Live Demo
 Check out the app live: [wine-quality2.streamlit.app](https://wine-quality2.streamlit.app)

@@ -1,11 +1,17 @@
 import streamlit as st
 import requests
 import json
+import os
 
-# --- Load secrets securely ---
-AZURE_ENDPOINT_URI = st.secrets["AZURE_ENDPOINT_URI"]
-AZURE_API_KEY = st.secrets["AZURE_API_KEY"]
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+# --- Load environment variables ---
+AZURE_ENDPOINT_URI = os.getenv("AZURE_ENDPOINT_URI")
+AZURE_API_KEY = os.getenv("AZURE_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# Validate required environment variables
+if not all([AZURE_ENDPOINT_URI, AZURE_API_KEY, OPENAI_API_KEY]):
+    st.error("⚠️ Missing required environment variables. Please set AZURE_ENDPOINT_URI, AZURE_API_KEY, and OPENAI_API_KEY.")
+    st.stop()
 
 st.title("🍷 AI Wine Quality Assistant")
 
