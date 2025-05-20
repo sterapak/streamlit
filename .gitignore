@@ -24,3 +24,6 @@ __pycache__/
 .vscode/
 .DS_Store
 .streamlit/secrets.toml
+
+# Test coverage files
+.coverage
