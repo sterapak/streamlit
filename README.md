@@ -13,9 +13,9 @@ Backed by Azure ML for model inference
 
 Fully configurable via .streamlit/secrets.toml
 
-### 🧪 Demo
+### 🚀 Live Demo
+Check out the app live: [wine-quality2.streamlit.app](https://wine-quality2.streamlit.app)
 
-![Wine App Screenshot](screenshot.png)
 
 ## 📊 Data Source
 
